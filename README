@@ -1,0 +1,39 @@
+You need libbitcoin-system and libbitcoin-client 3.6.0 installed.
+
+  $ git clone --single-branch --branch version3 https://github.com/libbitcoin/libbitcoin-system
+  $ cd libbitcoin-system
+  $ ./autogen.sh
+  $ ./configure --prefix /home/bob/.local/
+  $ make -j4 install
+  
+  $ git clone --single-branch --branch version3 https://github.com/libbitcoin/libbitcoin-client
+  $ cd libbitcoin-client
+  $ ./autogen.sh
+  $ ./configure --prefix /home/bob/.local/
+  $ make -j4 install
+
+If you want to install locally, add these variables to your ~/.bashrc and
+reload the terminal:
+
+  export PKG_CONFIG_PATH=/home/nar/.local/lib/pkgconfig
+  export LD_LIBRARY_PATH=/home/nar/.local/lib/
+
+To test the install run:
+
+  $ pkg-config --cflags --libs libbitcoin-client
+
+It should output include paths and linker flags if run correctly.
+
+Install pybind11 using pip3
+
+  $ pip3 install --user pybind11
+
+Also make sure python dev package is installed on your system.
+
+Now clone this repo and make the Python bindings:
+
+  $ git clone https://gitlab.com/narodnik/biji-server.git
+  $ cd biji-server
+  $ cd wallet
+  $ ./make.sh
+
