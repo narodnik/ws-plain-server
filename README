@@ -37,3 +37,13 @@ Now clone this repo and make the Python bindings:
   $ cd wallet
   $ ./make.sh
 
+Open two terminal windows.
+
+Terminal 1:
+
+  $ python run_proxy.py
+
+Terminal 2:
+
+  $ python fetch_history_test.py
+
