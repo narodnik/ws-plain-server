@@ -27,6 +27,7 @@ async def fetch():
         nym_address = await nym.details()
 
         blockchain_request = json.dumps({
+            "command": "fetch_history",
             "addrs": addrs,
             "return-recipient": nym_address
         })

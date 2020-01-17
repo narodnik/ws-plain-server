@@ -1,3 +1,4 @@
+#include "broadcast.hpp"
 #include "wallet.hpp"
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
@@ -34,5 +35,6 @@ PYBIND11_MODULE(wallet, m)
     m.def("fetch_history", &fetch_history);
     m.def("select_outputs", &select_outputs);
     m.def("build_transaction", &build_transaction);
+    m.def("broadcast", &broadcast);
 }
 

@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <pybind11/pybind11.h>
+
 namespace py = pybind11;
 
 struct transaction_point
