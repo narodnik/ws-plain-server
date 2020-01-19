@@ -34,7 +34,8 @@ in this format:
             <int transaction index>,
             <int block height>,
             <value of payment in satoshis, +ve for output, -ve for spend>
-        )
+        ),
+        ...
     ],
     ...
 }
