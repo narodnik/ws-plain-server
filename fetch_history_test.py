@@ -27,15 +27,15 @@ async def fetch():
 
         multi = multipart.Multipart(nym)
 
-        blockchain_request = json.dumps({
+        blockchain_request = {
             "command": "fetch_history",
             "addrs": addrs,
             "return-recipient": nym_address
-        })
+        }
         print("Sending:", blockchain_request)
 
         nym_server_address = "kauuj71-RPvETjz8FMQugnsNSDJ8033E4lNS_anMFD0="
-        await nym.send(blockchain_request, nym_server_address)
+        await multi.send(blockchain_request, nym_server_address)
 
         history = await multi.receive()
         display_history(history)
