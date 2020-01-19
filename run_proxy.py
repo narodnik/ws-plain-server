@@ -9,12 +9,6 @@ async def process(message, multi):
     print("Processing:", message)
 
     try:
-        message = json.loads(message)
-    except json.decoder.JSONDecodeError:
-        print("Error decoding message.")
-        return
-
-    try:
         command = message["command"]
     except KeyError:
         print("Error reading keys")
@@ -57,34 +51,14 @@ async def fetch_history(message, multi):
 transactions = {}
 
 def tx_hash(tx_data):
-    tx_data_bytes = bytes.fromhex(tx_data)
     sha256 = lambda data: hashlib.sha256(data).digest()
-    return sha256(sha256(tx_data_bytes))[::-1].hex()
+    return sha256(sha256(tx_data))[::-1].hex()
 
-async def broadcast(message, nym):
+async def broadcast(message, multi):
     try:
-        tx_chunk = message["tx_chunk"]
-        ident = message["id"]
-        index = message["index"]
-        total = message["total"]
+        tx_data = message["tx_data"]
     except KeyError:
-        print("Error reading addrs")
-        return
-
-    if ident not in transactions:
-        transactions[ident] = []
-
-    transactions[ident].insert(index, tx_chunk)
-
-    if len(transactions[ident]) != total:
-        print("Buffering chunk.")
-        return
-
-    tx_data = "".join(transactions[ident])
-    del transactions[ident]
-
-    if tx_hash(tx_data) != ident:
-        print("Error sanity check failed")
+        print("Error reading tx_data")
         return
 
     try:
@@ -93,7 +67,7 @@ async def broadcast(message, nym):
         print("Error reading hex data from tx")
         return
 
-    print("Broadcasting tx = ", tx.hex())
+    print("Broadcasting tx = ", tx_hash(tx))
     wallet.broadcast(tx)
 
 async def accept():
@@ -103,11 +77,8 @@ async def accept():
         multi = multipart.Multipart(nym)
 
         while True:
-            messages = await nym.fetch()
-
-            if messages:
-                [await process(message, multi) for message in messages]
-
+            message = await multi.receive()
+            await process(message, multi)
             await asyncio.sleep(0.1)
 
 def main():
