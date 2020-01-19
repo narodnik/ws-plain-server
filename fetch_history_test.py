@@ -1,11 +1,10 @@
 import asyncio
 import json
+import multipart
 import nym_proxy
 import wallet
 
-def display_history(history_message):
-    histories = json.loads(history_message)
-
+def display_history(histories):
     for address, history in histories.items():
         for row_type, output_hash, output_index, height, value in history:
             value_string = wallet.encode_base10(value)
@@ -26,6 +25,8 @@ async def fetch():
     async with nym_proxy.NymProxy(9001) as nym:
         nym_address = await nym.details()
 
+        multi = multipart.Multipart(nym)
+
         blockchain_request = json.dumps({
             "command": "fetch_history",
             "addrs": addrs,
@@ -36,10 +37,8 @@ async def fetch():
         nym_server_address = "kauuj71-RPvETjz8FMQugnsNSDJ8033E4lNS_anMFD0="
         await nym.send(blockchain_request, nym_server_address)
 
-        while True:
-            messages = await nym.fetch()
-            [display_history(message) for message in messages]
-            await asyncio.sleep(0.1)
+        history = await multi.receive()
+        display_history(history)
 
 def main():
     wallet.set_testnet(True)

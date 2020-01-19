@@ -1,10 +1,11 @@
 import asyncio
 import hashlib
 import json
+import multipart
 import nym_proxy
 import wallet
 
-async def process(message, nym):
+async def process(message, multi):
     print("Processing:", message)
 
     try:
@@ -20,13 +21,13 @@ async def process(message, nym):
         return
 
     if command == "fetch_history":
-        await fetch_history(message, nym)
+        await fetch_history(message, multi)
     elif command == "broadcast":
-        await broadcast(message, nym)
+        await broadcast(message, multi)
     else:
         print("Unknown command:", command)
 
-async def fetch_history(message, nym):
+async def fetch_history(message, multi):
     try:
         addrs = message["addrs"]
         return_recipient = message["return-recipient"]
@@ -51,8 +52,7 @@ async def fetch_history(message, nym):
                      row.spend.height, -row.value))
         histories_json[address] = address_json
 
-    histories_json_data = json.dumps(histories_json)
-    await nym.send(histories_json_data, return_recipient)
+    await multi.send(histories_json, return_recipient)
 
 transactions = {}
 
@@ -100,11 +100,13 @@ async def accept():
     async with nym_proxy.NymProxy(9002) as nym:
         print("Server address =", await nym.details())
 
+        multi = multipart.Multipart(nym)
+
         while True:
             messages = await nym.fetch()
 
             if messages:
-                [await process(message, nym) for message in messages]
+                [await process(message, multi) for message in messages]
 
             await asyncio.sleep(0.1)
 
