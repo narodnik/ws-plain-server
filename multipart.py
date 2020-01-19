@@ -18,19 +18,24 @@ class Multipart:
     async def send(self, message, recipient, size_limit=500):
         data = json.dumps(message)
 
+        # Split into chunks
         split_string = lambda string, chunk_size: \
             [string[i:i + chunk_size]
              for i in range(0, len(string), chunk_size)]
         chunks = split_string(data, size_limit)
 
+        # Compute ID
         data_id = compute_id(data)
 
         #print("Sending:", chunks)
         #print("ID:", data_id)
 
+        # Randomize order which helps debug problems
+        # And doesn't affect performance
         chunks = list(enumerate(chunks))
         random.shuffle(chunks)
 
+        # Send all the chunks
         for i, chunk in chunks:
             message = {
                 "id": data_id,
@@ -57,18 +62,25 @@ class Multipart:
         payload = message["payload"]
         index = message["index"]
 
+        # Create new entry for this data_id
         if data_id not in self._parts:
             self._parts[data_id] = []
 
+        # Insert part at correct index
         self._parts[data_id].insert(index, payload)
 
+        # Compute combined payload
         combined_payload = "".join(self._parts[data_id])
         
+        # Once we have all parts
+        # ID of combined should be re-computable
         if compute_id(combined_payload) != data_id:
             return None
 
+        # Delete entry since it's fulfilled
         del self._parts[data_id]
 
+        # Return result
         try:
             return json.loads(combined_payload)
         except json.decoder.JSONDecodeError:

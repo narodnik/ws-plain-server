@@ -1,0 +1,41 @@
+Layer 1:
+
+{
+    "id": <string sha256(sha256(payload_data))>,
+    "payload": <current chunk size, default 500 bytes>,
+    "index": <int index of chunk>
+}
+
+The data is hashed to get an ID, then broken into chunks. The chunks
+are sent to the endpoint, where they are re-assembled, then returned
+to the second layer.
+
+Layer 2:
+
+{
+    "command": "fetch_history",
+    "addrs": ["1addr", ...],
+    "return-recipient": "nym-address-of-sender"
+}
+
+{
+    "command": "broadcast",
+    "tx_data": <hex string of tx data>
+}
+
+The fetch_history using the same layer 1 protocol returns history rows
+in this format:
+
+{
+    "1address": [
+        (
+            "output" or "spend",
+            <hex string of transaction hash>,
+            <int transaction index>,
+            <int block height>,
+            <value of payment in satoshis, +ve for output, -ve for spend>
+        )
+    ],
+    ...
+}
+
