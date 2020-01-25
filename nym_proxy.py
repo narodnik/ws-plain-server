@@ -45,8 +45,7 @@ class NymProxy:
     async def fetch(self):
         response = await self.request("fetch")
         messages = response["messages"]
-        return [base64.b64decode(message).decode("utf-8")
-                for message in messages]
+        return messages
 
 async def hello():
     async with NymProxy(9002) as nym:
