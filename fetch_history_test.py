@@ -22,7 +22,7 @@ async def fetch():
     addrs = [wallet.key_to_address(key) for key in keys]
     print("Our addresses:", addrs)
 
-    uri = "ws://localhost:8765"
+    uri = "ws://85.90.245.20:8765"
     async with websockets.connect(uri) as websocket:
         #await websocket.send(name)
         #greeting = await websocket.recv()
