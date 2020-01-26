@@ -1,8 +1,8 @@
 import asyncio
 import json
 import multipart
-import nym_proxy
 import wallet
+import websockets
 
 def display_history(histories):
     for address, history in histories.items():
@@ -22,20 +22,21 @@ async def fetch():
     addrs = [wallet.key_to_address(key) for key in keys]
     print("Our addresses:", addrs)
 
-    async with nym_proxy.NymProxy(9001) as nym:
-        nym_address = await nym.details()
+    uri = "ws://localhost:8765"
+    async with websockets.connect(uri) as websocket:
+        #await websocket.send(name)
+        #greeting = await websocket.recv()
 
-        multi = multipart.Multipart(nym)
+        multi = multipart.Multipart(websocket)
 
         blockchain_request = {
             "command": "fetch_history",
             "addrs": addrs,
-            "return-recipient": nym_address
+            "return-recipient": "none"
         }
         print("Sending:", blockchain_request)
 
-        nym_server_address = "kauuj71-RPvETjz8FMQugnsNSDJ8033E4lNS_anMFD0="
-        await multi.send(blockchain_request, nym_server_address)
+        await multi.send(blockchain_request)
 
         history = await multi.receive()
         display_history(history)

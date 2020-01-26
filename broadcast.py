@@ -7,16 +7,16 @@ import sys
 import wallet
 
 async def broadcast(tx_data):
-    async with nym_proxy.NymProxy(9001) as nym:
-        multi = multipart.Multipart(nym)
+    uri = "ws://localhost:8765"
+    async with websockets.connect(uri) as websocket:
+        multi = multipart.Multipart(websocket)
 
         request = {
             "command": "broadcast",
             "tx_data": tx_data
         }
 
-        nym_server_address = "kauuj71-RPvETjz8FMQugnsNSDJ8033E4lNS_anMFD0="
-        await multi.send(request, nym_server_address)
+        await multi.send(request)
 
         print("Sent.")
         await asyncio.sleep(4)

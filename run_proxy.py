@@ -2,8 +2,8 @@ import asyncio
 import hashlib
 import json
 import multipart
-import nym_proxy
 import wallet
+import websockets
 
 async def process(message, multi):
     print("Processing:", message)
@@ -29,7 +29,9 @@ async def fetch_history(message, multi):
         print("Error reading fetch_history keys")
         return
 
+    print("Fetching history for:", addrs)
     histories = wallet.fetch_history(addrs)
+    print("Histories fetched. Continuing...")
 
     histories_json = {}
     for address, history in histories.items():
@@ -46,7 +48,7 @@ async def fetch_history(message, multi):
                      row.spend.height, -row.value))
         histories_json[address] = address_json
 
-    await multi.send(histories_json, return_recipient)
+    await multi.send(histories_json)
 
 transactions = {}
 
@@ -70,22 +72,27 @@ async def broadcast(message, multi):
     print("Broadcasting tx = ", tx_hash(tx))
     wallet.broadcast(tx)
 
-async def accept():
-    async with nym_proxy.NymProxy(9002) as nym:
-        print("Server address =", await nym.details())
+async def accept(websocket, path):
+    multi = multipart.Multipart(websocket)
 
-        multi = multipart.Multipart(nym)
-
-        while True:
+    while True:
+        try:
             message = await multi.receive()
             await process(message, multi)
-            await asyncio.sleep(0.1)
+        except websockets.exceptions.ConnectionClosedOK:
+            print("Websocket closed. Exiting...")
+            return
+
+        await asyncio.sleep(0.1)
 
 def main():
     wallet.set_testnet(True)
-    asyncio.get_event_loop().run_until_complete(accept())
+
+    start_server = websockets.serve(accept, "localhost", 8765)
+
+    asyncio.get_event_loop().run_until_complete(start_server)
+    asyncio.get_event_loop().run_forever()
 
 if __name__ == "__main__":
     main()
-
 

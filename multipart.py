@@ -10,12 +10,12 @@ def compute_id(data):
 
 class Multipart:
 
-    def __init__(self, nym):
-        self.nym = nym
+    def __init__(self, websocket):
+        self.websocket = websocket
 
         self._parts = {}
 
-    async def send(self, message, recipient, size_limit=500):
+    async def send(self, message, size_limit=500):
         data = json.dumps(message)
 
         # Split into chunks
@@ -42,18 +42,15 @@ class Multipart:
                 "payload": chunk,
                 "index": i
             }
-            await self.nym.send(json.dumps(message), recipient)
+            await self.websocket.send(json.dumps(message))
 
     async def receive(self):
         while True:
-            messages = await self.nym.fetch()
+            message = await self.websocket.recv()
             
-            for message in messages:
-                result = self._process(message)
-                if result is not None:
-                    return result
-
-            await asyncio.sleep(0.1)
+            result = self._process(message)
+            if result is not None:
+                return result
 
     def _process(self, message):
         message = json.loads(message)
